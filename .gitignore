@@ -1,0 +1,31 @@
+# --- raw data ---
+data/*
+!data/.gitkeep
+
+# --- macOS ---
+.DS_Store
+
+# --- VS Code ---
+.vscode/
+*.code-workspace
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.env
+.env.*
+
+# --- logs / temp ---
+*.log
+tmp/
+.temp/
+.cache/
+
+# --- Postgres / local DB artifacts ---
+*.dump
+*.sql.dump
+*.bak
+.pgpass
