@@ -3,23 +3,12 @@ from psycopg import sql
 import gzip
 from pathlib import Path
 
-# Path to the `moviedb/data/` directory
+# Path to the `data/` directory
 DATA_DIR = Path(__file__).parents[2] / "data"
-TITLE_CREW_FILE = DATA_DIR / "title.crew.tsv.gz"
-
-# COPY_SQL = """
-# COPY staging.title_crew (tconst, directors, writers)
-# FROM STDIN
-# WITH (
-#     FORMAT text,
-#     DELIMITER E'\\t',
-#     NULL '\\N'
-# )
-# """
-
+# TITLE_CREW_FILE = DATA_DIR / "title.crew.tsv.gz"
 
 # Key: file name
-# Value: [table_name, column list]
+# Value: [table_name, column name list]
 DATASET_CONFIG = {
     "title.basics.tsv.gz": [
         "title_basics",
@@ -64,17 +53,23 @@ COPY_SQL = sql.SQL("""
 def load_imdb_dumps() -> None:
     # Connect to the database
     with psycopg.connect("postgresql://localhost/moviedb") as con:
-        # Get a cursor to perform db operation
-        with con.cursor() as cur:
-            # Load each file
-            for file_name, (table_name, col_names) in DATASET_CONFIG.items():
-                # Check if the file has already been imported
-                if already_loaded(con, table_name):
-                    print(f"Skipping {file_name}: staging.{table_name} already has data")
-                    continue
+        # Load each file
+        for file_name, (table_name, col_names) in DATASET_CONFIG.items():
+            # Check if the file has already been imported
+            if already_loaded(con, table_name):
+                print(f"Skipping {file_name}: staging.{table_name} already has data")
+                continue
 
-                # File has not yet been loaded
-                
+            # File has not yet been loaded
+            try:
+                load_file(con, file_name, table_name, col_names)
+                con.commit()
+                print(f"Loaded {file_name} into staging.{table_name}")
+            except Exception as e:
+                con.rollback()
+                print(f"Failed loading {file_name} into staging.{table_name}: {e}")
+
+    print("Finished loading process. Check for any failures.")
 
 
 def already_loaded(con: psycopg.Connection, table_name: str) -> bool:
@@ -83,27 +78,35 @@ def already_loaded(con: psycopg.Connection, table_name: str) -> bool:
             TABLE_HAS_DATA_SQL.format(sql.Identifier(table_name))
         )
         return cur.fetchone()[0]
+    
+def load_file(con: psycopg.Connection, file_name: str, table_name: str, col_names: list[str]) -> None:
+    file_path = DATA_DIR / file_name
+
+    # Create an Identifier for each col name
+    column_identifiers = []
+    for col in col_names:
+        column_identifiers.append(sql.Identifier(col))
+    # Merge the Identifiers into a single one
+    column_list_sql = sql.SQL(", ").join(column_identifiers)
+
+    # Now we can use that as a single identifier to create
+    # the COPY FROM query
+    copy_stmt = COPY_SQL.format(
+        sql.Identifier(table_name),
+        column_list_sql
+    )
+
+    # Load the dataset if present
+    with con.cursor() as cur:
+        if not file_path.exists():
+            raise FileNotFoundError(f"Missing dataset file: {file_name}")
         
+        with gzip.open(file_path, "rt", encoding="utf-8", newline="") as f:
+            with cur.copy(copy_stmt) as copy:
+                # Skip the header line, then write to table
+                next(f, None)
+                for line in f:
+                    copy.write(line)
 
-
-# def load_title_crew() -> None:
-#     if not TITLE_CREW_FILE.exists():
-#         raise FileNotFoundError(f"Missing dataset file: {TITLE_CREW_FILE}")
-
-#     # Connect to the db
-#     with psycopg.connect("postgresql://localhost/moviedb") as con:
-#         # Get a cursor to perform db operations
-#         with con.cursor() as cur:
-#             # Open the zip with the dataset
-#             with gzip.open(TITLE_CREW_FILE, "rt", encoding="utf-8", newline="") as f:
-#                 # Use a Copy object to execute the COPY FROM query for each line
-#                 with cur.copy(COPY_SQL) as copy:
-#                     # Skip the header line
-#                     next(f, None)
-#                     for line in f:
-#                         copy.write(line)
-
-
-# if __name__ == "__main__":
-#     load_title_crew()
-#     print(f"Loaded {TITLE_CREW_FILE.name} into staging.title_crew")
+if __name__ == "__main__":
+    load_imdb_dumps()
