@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS intermediate.movie_tconsts AS (
     WHERE "titleType" = 'movie'
 );
 
-DROP TABLE IF EXISTS intermediate.title_ratings;
 CREATE TABLE IF NOT EXISTS intermediate.title_ratings AS (
     SELECT "tconst" AS tconst,
     CAST("averageRating" AS double precision) AS averagerating,
@@ -15,3 +14,17 @@ CREATE TABLE IF NOT EXISTS intermediate.title_ratings AS (
     WHERE "tconst" IN (SELECT tconst FROM intermediate.movie_tconsts)
 );
 
+DROP TABLE IF EXISTS intermediate.ratings_stats;
+CREATE TABLE IF NOT EXISTS intermediate.ratings_stats AS (
+    SELECT
+    MIN(numvotes) AS minvotes,
+    MAX(numvotes) AS maxvotes,
+    AVG(numvotes) AS avgvotes,
+    percentile_cont(0.25) WITHIN GROUP (ORDER BY numvotes ASC)
+        AS p25votes,
+    percentile_cont(0.55) WITHIN GROUP (ORDER BY numvotes ASC)
+    AS p50votes,
+    percentile_cont(0.75) WITHIN GROUP (ORDER BY numvotes ASC)
+        AS p75votes
+    FROM intermediate.title_ratings
+);
