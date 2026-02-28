@@ -21,3 +21,9 @@ CREATE TABLE IF NOT EXISTS intermediate.movie_basics AS (
     FROM staging.title_basics
     WHERE "tconst" IN (SELECT tconst FROM intermediate.rated_movie_tconsts)
 );
+
+CREATE TABLE IF NOT EXISTS intermediate.movie_crew AS (
+    SELECT tconst, directors, writers
+    FROM staging.title_crew
+    WHERE tconst IN (SELECT tconst FROM intermediate.rated_movie_tconsts)
+);
