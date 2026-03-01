@@ -27,3 +27,15 @@ CREATE TABLE IF NOT EXISTS intermediate.movie_crew AS (
     FROM staging.title_crew
     WHERE tconst IN (SELECT tconst FROM intermediate.rated_movie_tconsts)
 );
+
+CREATE TABLE IF NOT EXISTS intermediate.movie_principals AS (
+    SELECT
+        tconst,
+        CAST(ordering AS integer) AS ordering,
+        nconst,
+        category,
+        job,
+        characters
+    FROM staging.title_principals
+    WHERE tconst IN (SELECT tconst FROM intermediate.rated_movie_tconsts)
+);
