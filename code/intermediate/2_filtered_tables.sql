@@ -54,3 +54,4 @@ CREATE TABLE intermediate.people_info AS (
     FROM staging.name_basics
     WHERE nconst IN (SELECT nconst FROM intermediate.rated_movie_nconsts)
 );
+
