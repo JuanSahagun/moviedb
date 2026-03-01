@@ -40,10 +40,10 @@ CREATE TABLE IF NOT EXISTS intermediate.movie_principals AS (
     WHERE tconst IN (SELECT tconst FROM intermediate.rated_movie_tconsts)
 );
 
-CREATE TABLE IF NOT EXISTS intermediate.movie_ratings (
+CREATE TABLE IF NOT EXISTS intermediate.movie_ratings AS (
     SELECT
         tconst,
-        CAST("averageRating" AS double precision) AS averagegrating,
+        CAST("averageRating" AS double precision) AS averagerating,
         CAST("numVotes" AS integer) AS numVotes
     FROM staging.title_ratings
     WHERE tconst IN (SELECT tconst FROM intermediate.rated_movie_tconsts)
