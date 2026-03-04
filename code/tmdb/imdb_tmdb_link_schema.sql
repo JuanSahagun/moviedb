@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS movie_link (
     link_status text
         CHECK IN ('pending', 'success', 'ambiguous', 'error', 'not_found'),
     result jsonb,
-    attempt_count integer DEFAULT 0,
+    attempt_count integer NOT NULL DEFAULT 0,
     last_error text,
     last_attempt timestamp with time zone
 );
