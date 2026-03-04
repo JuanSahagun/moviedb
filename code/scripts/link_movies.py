@@ -11,24 +11,24 @@ movie_limit =  1000
 # Batch size of each Linking & Writing iteration.
 batch_size = 100
 
-# * This query retrieves the IMDb movie ids that have a link status of 
-#   'pending' or 'error' (with an attempt limit of 3).
+# * This query retrieves the IMDb movies that have a link_status of 
+#   'pending' or 'error' (attempt limit < 3).
 # * Movies with higher vote counts are prioritized.
 select_tconst_sql = f"""
 SELECT tconst
 FROM link.movies l
     INNER JOIN intermediate.rated_movies r
     ON l.tconst = r.tconst
-WHERE l.link_status = 'pending'
-    OR (l.link_status = 'error' AND l.attempt_count < 3)
-ORDER BY r.numvotes DESC
+WHERE link_status = 'pending'
+    OR (link_status = 'error' AND attempt_count < 3)
+ORDER BY numvotes DESC
 LIMIT {movie_limit}
 ;
 """
 
 # * This query will be used to update the status of a movie that was
-#   just attempted to be linked to the TMDB database.
-# * Replacement value order: (tmdb_id, link_status, result, last_error, tconst)
+#   just attempted to be linked with the TMDB database.
+# * Order of replacement values: (tmdb_id, link_status, result, last_error, tconst)
 update_status_sql = """
 UPDATE link.movies
 SET
@@ -48,6 +48,6 @@ def link() -> None:
     con = psycopg.connect("postgresql://localhost/moviedb")
     cur = con.cursor()
     
-    # Add the IMDb ids to the result set
+    # Add the IMDb movies to the result set
     cur.execute(select_tconst_sql)
     
