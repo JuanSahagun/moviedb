@@ -41,3 +41,13 @@ SET
 WHERE tconst = %s
 ;
 """
+
+
+def link() -> None:
+    # Connect to the db
+    con = psycopg.connect("postgresql://localhost/moviedb")
+    cur = con.cursor()
+    
+    # Add the IMDb ids to the result set
+    cur.execute(select_tconst_sql)
+    
