@@ -50,4 +50,17 @@ def link() -> None:
     
     # Add the IMDb movies to the result set
     cur.execute(select_tconst_sql)
+
+    # Match & Update one batch at a time
+    while batch := cur.fetchmany(batch_size):
+        matches = get_matches( [t[0] for t in batch] )
+        write_matches(matches)
     
+
+def get_matches(tconsts: list[str]) -> list[tuple[int, str, Jsonb, str]]:
+    # TODO: Write this function
+    return None # Placeholder
+
+def write_matches(updates: list[tuple[int, str, Jsonb, str]]) -> None:
+    # TODO: Write this function
+    return None # Placeholder
