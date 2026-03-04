@@ -29,3 +29,8 @@ tmp/
 *.sql.dump
 *.bak
 .pgpass
+
+# --- Files with API Keys --
+.env
+.env.local
+*.key
