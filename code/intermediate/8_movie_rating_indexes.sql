@@ -1,0 +1,1 @@
+ALTER TABLE intermediate.movie_ratings ADD PRIMARY KEY (tconst);
