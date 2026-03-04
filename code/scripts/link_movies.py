@@ -61,9 +61,10 @@ def link() -> None:
     
 
 def get_matches(tconsts: list[str]) -> list[tuple[int, str, Jsonb, str]]:
-    # TODO: Write this function
+    # TODO: Use the enviornment variable to get the API key
+    
     return None # Placeholder
 
 def write_matches(updates: list[tuple[int, str, Jsonb, str]]) -> None:
-    # TODO: Write this function
+    # TODO: Write this function. Consider using con.transaction()
     return None # Placeholder
