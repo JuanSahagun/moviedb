@@ -1,6 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS link;
 
-CREATE TABLE IF NOT EXISTS movie_link (
+CREATE TABLE IF NOT EXISTS link.movies (
     tconst text PRIMARY KEY,
     tmdb_id integer,
     link_status text
