@@ -54,6 +54,9 @@ def link() -> None:
     # Match & Update one batch at a time
     while batch := cur.fetchmany(batch_size):
         matches = get_matches( [t[0] for t in batch] )
+        # TODO: consider placing this function call within a try-except
+        # block, so that failed transactions do not stop the entire program,
+        # and we simply move on to the next batch.
         write_matches(matches)
     
 
