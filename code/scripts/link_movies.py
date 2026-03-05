@@ -60,7 +60,7 @@ def link() -> None:
         with conn.cursor(name='link_cursor', withhold=True) as read_cur:
             with conn.cursor() as write_cursor:
 
-                # Add the IMDb movies to the result set
+                # Add IMDb movies to the result set
                 read_cur.execute(select_tconst_sql)
 
                 # Match & Update one batch at a time
@@ -93,7 +93,8 @@ def get_matches(session: LimiterSession, tconsts: list[str]) -> list[tuple[int|N
         'language': 'en-US'
     }
 
-    # Call the Find BY ID endpoint for each movie
+    # Call the Find BY ID endpoint for each movie.
+    # On each iteration, append a 5-tuple with updated link-status attributes.
     for t in tconsts:
         url = f"https://api.themoviedb.org/3/find/{t}"
         try:
@@ -146,7 +147,13 @@ def get_repl_tup(imdb_id, resp_data) -> tuple[int|None, str, Jsonb, str|None, st
 
 
 def write_matches(cur: psycopg.Cursor, updates: list[tuple[int|None, str, Jsonb, str|None, str]]) -> None:
-    # TODO: Write this function.
+    """
+    Uses the write-cursor to execute a UPDATE [table] statement
+    for each tuple in the current batch.
+
+    After exiting, the link.movies table should now have the updated
+    link-status of movies is this batch.
+    """
     cur.executemany(update_status_sql, updates)
 
 
