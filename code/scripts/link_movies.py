@@ -22,7 +22,7 @@ batch_size = 100
 select_tconst_sql = f"""
 SELECT tconst
 FROM link.movies l
-    INNER JOIN intermediate.rated_movies r
+    INNER JOIN intermediate.movie_ratings r
     ON l.tconst = r.tconst
 WHERE link_status = 'pending'
     OR (link_status = 'error' AND attempt_count < 3)
