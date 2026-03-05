@@ -52,6 +52,9 @@ def link() -> None:
     # Prevent rate-limiting
     session = LimiterSession(per_second=20)
 
+    print("Linking about to begin.")
+    print(f"Will attempt to link {movie_limit} movies.")
+
     # Connect to the db
     with psycopg.connect("postgresql://localhost/moviedb") as conn:
         with conn.cursor() as cur:
@@ -60,12 +63,19 @@ def link() -> None:
             cur.execute(select_tconst_sql)
 
             # Match & Update one batch at a time
+            batch_num = 0
+            total = 0
             while batch := cur.fetchmany(batch_size):
+                batch_num += 1
+                total += len(batch)
                 # Obtain the matches
                 matches = get_matches(session, [t[0] for t in batch] )
                 # Write the matches to the table, and commit every batch
                 write_matches(cur, matches)
                 conn.commit()
+                print(f"Batch {batch_num} complete ({total}/{movie_limit} movies processed)")
+
+    print("Job completed.")
     
 
 def get_matches(session: LimiterSession, tconsts: list[str]) -> list[tuple[int|None, str, Jsonb, str|None, str]]:
