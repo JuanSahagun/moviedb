@@ -20,7 +20,7 @@ batch_size = 100
 #   'pending' or 'error' (attempt limit < 3).
 # * Movies with higher vote counts are prioritized.
 select_tconst_sql = f"""
-SELECT tconst
+SELECT l.tconst
 FROM link.movies l
     INNER JOIN intermediate.movie_ratings r
     ON l.tconst = r.tconst
