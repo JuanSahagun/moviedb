@@ -63,7 +63,7 @@ def link() -> None:
             while batch := cur.fetchmany(batch_size):
                 # Obtain the matches
                 matches = get_matches(session, [t[0] for t in batch] )
-                # Write the matches to the table, and commit.
+                # Write the matches to the table, and commit every batch
                 write_matches(cur, matches)
                 conn.commit()
     
@@ -137,3 +137,7 @@ def get_repl_tup(imdb_id, resp_data) -> tuple[int|None, str, Jsonb, str|None, st
 def write_matches(cur: psycopg.Cursor, updates: list[tuple[int|None, str, Jsonb, str|None, str]]) -> None:
     # TODO: Write this function.
     cur.executemany(update_status_sql, updates)
+
+
+if __name__ == '__main__':
+    link()
