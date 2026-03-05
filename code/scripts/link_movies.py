@@ -6,6 +6,11 @@ from dotenv import load_dotenv
 import psycopg
 from psycopg.types.json import Jsonb
 
+# Load API key from the enviornment variable
+load_dotenv()
+api_key = os.getenv('TMDB_API_KEY')
+
+
 # Max amount of movies to attempt to link.
 movie_limit =  1000
 # Batch size of each Linking & Writing iteration.
@@ -54,17 +59,76 @@ def link() -> None:
     # Match & Update one batch at a time
     while batch := cur.fetchmany(batch_size):
         matches = get_matches( [t[0] for t in batch] )
-        # TODO: consider placing this function call within a try-except
-        # block, so that failed transactions do not stop the entire program,
-        # and we simply move on to the next batch.
-        write_matches(matches)
+        # TODO: Call the write_matches function
     
 
-def get_matches(tconsts: list[str]) -> list[tuple[int, str, Jsonb, str]]:
-    # TODO: Use the enviornment variable to get the API key
-    
-    return None # Placeholder
+def get_matches(tconsts: list[str]) -> list[tuple[int|None, str, Jsonb, str|None, str]]:
+    # The update-values for this batch
+    upd_lst = []
 
-def write_matches(updates: list[tuple[int, str, Jsonb, str]]) -> None:
-    # TODO: Write this function. Consider using con.transaction()
+    # Set the headers and query parameters for the request
+    headers = {
+        'accept': 'application/json',
+        'authorization': f'Bearer {api_key}'
+    }
+    parameters = {
+        'external_source': 'imdb_id',
+        'language': 'en-US'
+    }
+
+    # Call the Find BY ID endpoint for each movie
+    for t in tconsts:
+        url = f"https://api.themoviedb.org/3/find/{t}"
+        try:
+            # TODO: Implement rate-limiting prevention
+
+            resp = requests.get(url, headers=headers, params=parameters)
+            resp.raise_for_status()
+            data = resp.json()
+
+            # Append the tuple with the replacement values to this list
+            upd_lst.append(get_repl_tup(t, data))
+
+        except Exception as e:
+            # TODO: Code for in case of an exception
+    
+    return upd_lst
+
+
+def get_repl_tup(imdb_id, resp_data) -> tuple[int|None, str, Jsonb, str|None, str]:
+    """
+    If the request was successful, this function will be passed the response
+    and return the 5-tuple of values to use when updating the link.movies table
+
+    Order of replacement values: (tmdb_id, link_status, result, last_error, tconst)
+
+    Note: If we are in this function, then last_error will always be None
+    """
+    tmdb_id = None
+    link_status = ''
+    result = Jsonb(resp_data)
+
+    # Error handling if 'movie_results' key does not exist
+    try:
+        movie_lst = resp_data['movie_results']
+
+        num_matches = len(movie_lst)
+        if num_matches == 0:
+            link_status = 'not_found'
+        elif num_matches == 1:
+            link_status = 'success'
+            tmdb_id = movie_lst[0]['id']
+        else:
+            link_status = 'ambiguous'
+        return (tmdb_id, link_status, result, None, imdb_id)
+    except KeyError:
+        link_status = 'error'
+        last_error = 'Key Error. Did not find movie_results field.'
+        return (tmdb_id, link_status, result, last_error, imdb_id)
+
+
+
+def write_matches(updates: list[tuple[int|None, str, Jsonb, str|None, str]]) -> None:
+    # TODO: Write this function.
+
     return None # Placeholder
