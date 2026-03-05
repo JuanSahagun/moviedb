@@ -1,4 +1,4 @@
-import requests
+from requests_ratelimiter import LimiterSession
 
 import os
 from dotenv import load_dotenv
@@ -66,6 +66,9 @@ def get_matches(tconsts: list[str]) -> list[tuple[int|None, str, Jsonb, str|None
     # The update-values for this batch
     upd_lst = []
 
+    # Prevent rate-limiting
+    session = LimiterSession(per_second=20)
+
     # Set the headers and query parameters for the request
     headers = {
         'accept': 'application/json',
@@ -80,9 +83,7 @@ def get_matches(tconsts: list[str]) -> list[tuple[int|None, str, Jsonb, str|None
     for t in tconsts:
         url = f"https://api.themoviedb.org/3/find/{t}"
         try:
-            # TODO: Implement rate-limiting prevention
-
-            resp = requests.get(url, headers=headers, params=parameters)
+            resp = session.get(url, headers=headers, params=parameters)
             resp.raise_for_status()
             data = resp.json()
 
