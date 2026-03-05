@@ -57,7 +57,7 @@ def link() -> None:
 
     # Connect to the db
     with psycopg.connect("postgresql://localhost/moviedb") as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(name="link_cursor") as cur:
 
             # Add the IMDb movies to the result set
             cur.execute(select_tconst_sql)
