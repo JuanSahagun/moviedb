@@ -49,25 +49,25 @@ WHERE tconst = %s
 
 
 def link() -> None:
-    # Connect to the db
-    con = psycopg.connect("postgresql://localhost/moviedb")
-    cur = con.cursor()
-    
-    # Add the IMDb movies to the result set
-    cur.execute(select_tconst_sql)
-
-    # Match & Update one batch at a time
-    while batch := cur.fetchmany(batch_size):
-        matches = get_matches( [t[0] for t in batch] )
-        # TODO: Call the write_matches function
-    
-
-def get_matches(tconsts: list[str]) -> list[tuple[int|None, str, Jsonb, str|None, str]]:
-    # The update-values for this batch
-    upd_lst = []
-
     # Prevent rate-limiting
     session = LimiterSession(per_second=20)
+
+    # Connect to the db
+    with psycopg.connect("postgresql://localhost/moviedb") as conn:
+        with conn.cursor() as cur:
+
+            # Add the IMDb movies to the result set
+            cur.execute(select_tconst_sql)
+
+            # Match & Update one batch at a time
+            while batch := cur.fetchmany(batch_size):
+                matches = get_matches(session, [t[0] for t in batch] )
+                # TODO: Call the write_matches function
+    
+
+def get_matches(session: LimiterSession, tconsts: list[str]) -> list[tuple[int|None, str, Jsonb, str|None, str]]:
+    # The update-values for this batch
+    upd_lst = []
 
     # Set the headers and query parameters for the request
     headers = {
@@ -91,7 +91,9 @@ def get_matches(tconsts: list[str]) -> list[tuple[int|None, str, Jsonb, str|None
             upd_lst.append(get_repl_tup(t, data))
 
         except Exception as e:
-            # TODO: Code for in case of an exception
+            upd_lst.append(
+                (None, 'error', None, str(e), t)
+            )
     
     return upd_lst
 
