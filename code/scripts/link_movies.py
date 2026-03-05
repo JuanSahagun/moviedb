@@ -12,7 +12,7 @@ api_key = os.getenv('TMDB_API_KEY')
 
 
 # Max amount of movies to attempt to link.
-movie_limit =  1000
+movie_limit =  300
 # Batch size of each Linking & Writing iteration.
 batch_size = 100
 
@@ -50,30 +50,31 @@ WHERE tconst = %s
 
 def link() -> None:
     # Prevent rate-limiting
-    session = LimiterSession(per_second=20)
+    session = LimiterSession(per_second=8)
 
     print("Linking about to begin.")
     print(f"Will attempt to link {movie_limit} movies.")
 
     # Connect to the db
     with psycopg.connect("postgresql://localhost/moviedb") as conn:
-        with conn.cursor(name="link_cursor") as cur:
+        with conn.cursor(name='link_cursor', withhold=True) as read_cur:
+            with conn.cursor() as write_cursor:
 
-            # Add the IMDb movies to the result set
-            cur.execute(select_tconst_sql)
+                # Add the IMDb movies to the result set
+                read_cur.execute(select_tconst_sql)
 
-            # Match & Update one batch at a time
-            batch_num = 0
-            total = 0
-            while batch := cur.fetchmany(batch_size):
-                batch_num += 1
-                total += len(batch)
-                # Obtain the matches
-                matches = get_matches(session, [t[0] for t in batch] )
-                # Write the matches to the table, and commit every batch
-                write_matches(cur, matches)
-                conn.commit()
-                print(f"Batch {batch_num} complete ({total}/{movie_limit} movies processed)")
+                # Match & Update one batch at a time
+                batch_num = 0
+                total = 0
+                while batch := read_cur.fetchmany(batch_size):
+                    batch_num += 1
+                    total += len(batch)
+                    # Obtain the matches
+                    matches = get_matches(session, [t[0] for t in batch] )
+                    # Write the matches to the table, and commit every batch
+                    write_matches(write_cursor, matches)
+                    conn.commit()
+                    print(f"Batch {batch_num} complete ({total}/{movie_limit} movies processed)")
 
     print("Job completed.")
     
