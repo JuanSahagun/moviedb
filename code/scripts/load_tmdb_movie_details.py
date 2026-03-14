@@ -43,3 +43,36 @@ SET
 WHERE tmdb_id = %s
 ;
 """
+
+def find_movies() -> None:
+    # Connect to the db
+    with psycopg.connect("postgresql://localhost/moviedb") as conn:
+        with conn.cursor() as read_cur:
+            with conn.cursor() as write_cur:
+                # Add the IMDB ID's to the result set
+                read_cur.execute(select_tmdb_sql)
+
+                batch_num = 0
+                total = 0
+
+                # Find and update one batch at a time
+                while next_batch := read_cur.fetchmany(batch_size):
+                    batch_num += 1
+                    total += len(next_batch)
+                    # Flatten the list of 1-tuples into a list of integers.
+                    next_batch = [tup[0] for tup in next_batch]
+
+                    # Obtain the results
+                    batch_details = get_details()
+
+                    # Write the results
+                    write_updates(batch_details)
+                    
+
+
+def get_details():
+    return None
+
+def write_updates():
+    return None
+
