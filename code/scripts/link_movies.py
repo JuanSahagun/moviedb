@@ -12,7 +12,7 @@ api_key = os.getenv('TMDB_API_KEY')
 
 
 # Max amount of movies to attempt to link.
-movie_limit =  300
+movie_limit =  62000
 # Batch size of each Linking & Writing iteration.
 batch_size = 100
 
@@ -50,7 +50,7 @@ WHERE tconst = %s
 
 def link() -> None:
     # Prevent rate-limiting
-    session = LimiterSession(per_second=8)
+    session = LimiterSession(per_second=10)
 
     print("Linking about to begin.")
     print(f"Will attempt to link {movie_limit} movies.")

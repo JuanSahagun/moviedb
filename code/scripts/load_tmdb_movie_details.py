@@ -45,6 +45,9 @@ WHERE tmdb_id = %s
 """
 
 def find_movies() -> None:
+    # Prevent rate-limiting
+    session = LimiterSession(per_second=10)
+
     # Connect to the db
     with psycopg.connect("postgresql://localhost/moviedb") as conn:
         with conn.cursor() as read_cur:
@@ -63,14 +66,17 @@ def find_movies() -> None:
                     next_batch = [tup[0] for tup in next_batch]
 
                     # Obtain the results
-                    batch_details = get_details()
-
+                    batch_details = get_details(next_batch)
                     # Write the results
                     write_updates(batch_details)
-                    
+                    # Commit pending transactions and display progress
+                    conn.commit()
+                    print(f"Batch {batch_num} processed. ({total/movie_limit*100:.2f}% complete)")
+                print("Job completed.")
 
 
-def get_details():
+
+def get_details(session: LimiterSession, movie_ids: list[int]):
     return None
 
 def write_updates():
