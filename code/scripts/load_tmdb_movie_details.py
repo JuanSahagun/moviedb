@@ -119,9 +119,9 @@ def get_replacement_vals(tmdb_id, data) -> tuple[str, Jsonb, str, int]:
 
     # Edgecase, movie ID was not recognized.
     if "success" in fields and data["success"] is False:
-        return ('not_found', data, data["status_message"], tmdb_id)
+        return ('not_found', Jsonb(data), data["status_message"], tmdb_id)
     
-    return ('success', data, None, tmdb_id)
+    return ('success', Jsonb(data), None, tmdb_id)
 
 
 def write_updates(cur: psycopg.Cursor, updates: list[tuple]) -> None:
