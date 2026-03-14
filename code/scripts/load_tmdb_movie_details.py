@@ -68,7 +68,7 @@ def find_movies() -> None:
                     # Obtain the results
                     batch_details = get_details(next_batch)
                     # Write the results
-                    write_updates(batch_details)
+                    write_updates(write_cur, batch_details)
                     # Commit pending transactions and display progress
                     conn.commit()
                     print(f"Batch {batch_num} processed. ({total/movie_limit*100:.2f}% complete)")
@@ -124,6 +124,6 @@ def get_replacement_vals(tmdb_id, data) -> tuple[str, Jsonb, str, int]:
     return ('success', data, None, tmdb_id)
 
 
-def write_updates():
-    return None
+def write_updates(cur: psycopg.Cursor, updates: list[tuple]) -> None:
+    cur.executemany(update_status_sql, updates)
 
