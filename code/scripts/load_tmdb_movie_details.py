@@ -11,7 +11,7 @@ load_dotenv()
 api_key = os.getenv('TMDB_API_KEY')
 
 # Max amount of movies to attempt to find.
-movie_limit =  10000
+movie_limit =  10
 # Batch size of each Linking & Writing iteration.
 batch_size = 100
 
@@ -127,3 +127,5 @@ def get_replacement_vals(tmdb_id, data) -> tuple[str, Jsonb, str, int]:
 def write_updates(cur: psycopg.Cursor, updates: list[tuple]) -> None:
     cur.executemany(update_status_sql, updates)
 
+if __name__ == '__main__':
+    find_movies()
