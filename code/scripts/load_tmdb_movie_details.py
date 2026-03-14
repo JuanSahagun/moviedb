@@ -66,7 +66,7 @@ def find_movies() -> None:
                     next_batch = [tup[0] for tup in next_batch]
 
                     # Obtain the results
-                    batch_details = get_details(next_batch)
+                    batch_details = get_details(session, next_batch)
                     # Write the results
                     write_updates(write_cur, batch_details)
                     # Commit pending transactions and display progress
