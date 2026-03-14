@@ -37,7 +37,7 @@ UPDATE link.tmdb_movie_details
 SET
     found_status = %s,
     result = %s,
-    attempt_count = attempt_count + 1
+    attempt_count = attempt_count + 1,
     last_error = %s,
     last_attempt = NOW()
 WHERE tmdb_id = %s
