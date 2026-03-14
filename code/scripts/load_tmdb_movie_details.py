@@ -112,7 +112,16 @@ def get_details(session: LimiterSession, movie_ids: list[int]) -> list[tuple]:
 
 
 def get_replacement_vals(tmdb_id, data) -> tuple[str, Jsonb, str, int]:
-    return None
+    """
+    (found_status, result, last_error, tmdb_id)
+    """
+    fields = data.keys()
+
+    # Edgecase, movie ID was not recognized.
+    if "success" in fields and data["success"] is False:
+        return ('not_found', data, data["status_message"], tmdb_id)
+    
+    return ('success', data, None, tmdb_id)
 
 
 def write_updates():
