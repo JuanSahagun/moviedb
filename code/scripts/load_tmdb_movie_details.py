@@ -76,8 +76,44 @@ def find_movies() -> None:
 
 
 
-def get_details(session: LimiterSession, movie_ids: list[int]):
+def get_details(session: LimiterSession, movie_ids: list[int]) -> list[tuple]:
+    # A list of tuples, for the values to be used in the UPDATE statement
+    update_tups = []
+
+    # Set the headers and query parameters for the request
+    headers = {
+        'accept': 'application/json',
+        'authorization': f'Bearer {api_key}'
+    }
+    params = {
+        'external_source': 'imdb_id',
+        'language': 'en-US'
+    }
+
+    # Call the Movie Details endpoint for each movie.
+    # On each iteration, append a 4-tuple with the UPDATE statement's
+    # replacement values.
+    for id in movie_ids:
+        url = f"https://api.themoviedb.org/3/movie/{id}"
+
+        try:
+            resp = session.get(url, headers=headers, params=params)
+            resp.raise_for_status()
+            data = resp.json()
+            update_vals = get_replacement_vals(id, data)
+            update_tups.append(update_vals)
+        except Exception as e:
+            update_tups.append(
+                ('error', None, str(e), id)
+            )
+
+    return update_tups
+
+
+
+def get_replacement_vals(tmdb_id, data) -> tuple[str, Jsonb, str, int]:
     return None
+
 
 def write_updates():
     return None
