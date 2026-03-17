@@ -45,6 +45,5 @@ CREATE TABLE IF NOT EXISTS public.movie_roles (
     job text,
     characters text,
     PRIMARY KEY (tconst, nconst, ordering),
-    FOREIGN KEY (tconst) REFERENCES public.movies (tconst),
-    FOREIGN KEY (nconst) REFERENCES public.people (nconst)
+    FOREIGN KEY (tconst) REFERENCES public.movies (tconst)
 );
