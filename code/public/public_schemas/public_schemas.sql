@@ -36,3 +36,15 @@ CREATE TABLE IF NOT EXISTS public.people (
     CONSTRAINT valid_death_year 
         CHECK (death_year >= 1111 AND death_year <= 9999)
 );
+
+CREATE TABLE IF NOT EXISTS public.movie_roles (
+    tconst text,
+    nconst text,
+    ordering int,
+    category text,
+    job text,
+    characters text,
+    PRIMARY KEY (tconst, nconst, ordering),
+    FOREIGN KEY (tconst) REFERENCES public.movies (tconst),
+    FOREIGN KEY (nconst) REFERENCES public.people (nconst)
+);
