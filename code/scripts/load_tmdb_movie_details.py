@@ -11,7 +11,7 @@ load_dotenv()
 api_key = os.getenv('TMDB_API_KEY')
 
 # Max amount of movies to attempt to find.
-movie_limit =  10
+movie_limit =  100
 # Batch size of each Linking & Writing iteration.
 batch_size = 100
 
@@ -24,7 +24,7 @@ FROM link.tmdb_movie_details t
     INNER JOIN intermediate.movie_ratings r
     ON t.tconst = r.tconst
 WHERE found_status = 'pending'
-    OR (found_status = 'error' AND attempt_count < 3)
+    OR (found_status = 'error' AND attempt_count < 30)
 ORDER BY numvotes DESC
 LIMIT {movie_limit}
 ;
@@ -46,7 +46,7 @@ WHERE tmdb_id = %s
 
 def find_movies() -> None:
     # Prevent rate-limiting
-    session = LimiterSession(per_second=10)
+    session = LimiterSession(per_second=20)
 
     # Connect to the db
     with psycopg.connect("postgresql://localhost/moviedb") as conn:
