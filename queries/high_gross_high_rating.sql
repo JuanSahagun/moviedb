@@ -14,4 +14,3 @@ WHERE m.revenue > 500000000
     AND m.num_votes >= 50000
 ORDER BY m.revenue DESC
 LIMIT 15;
-
