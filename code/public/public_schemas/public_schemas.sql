@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS public.movies (
 
 CREATE TABLE IF NOT EXISTS public.movie_genres (
     tconst text,
-    genre textm
-    PRIMARY KEY (tconst, genre)
+    genre text,
+    PRIMARY KEY (tconst, genre),
     FOREIGN KEY (tconst) REFERENCES public.movies (tconst)
 );
