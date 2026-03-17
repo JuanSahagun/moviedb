@@ -18,3 +18,9 @@ CREATE TABLE IF NOT EXISTS public.movies (
     CHECK (num_votes >= 0)
 );
 
+CREATE TABLE IF NOT EXISTS public.movie_genres (
+    tconst text,
+    genre textm
+    PRIMARY KEY (tconst, genre)
+    FOREIGN KEY (tconst) REFERENCES public.movies (tconst)
+);
