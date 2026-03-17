@@ -24,3 +24,15 @@ CREATE TABLE IF NOT EXISTS public.movie_genres (
     PRIMARY KEY (tconst, genre),
     FOREIGN KEY (tconst) REFERENCES public.movies (tconst)
 );
+
+CREATE TABLE IF NOT EXISTS public.people (
+    nconst text,
+    primary_name text,
+    birth_year int,
+    death_year int,
+    PRIMARY KEY (nconst),
+    CONSTRAINT valid_birth_year 
+        CHECK (birth_year >= 1111 AND birth_year <= 9999),
+    CONSTRAINT valid_death_year 
+        CHECK (death_year >= 1111 AND death_year <= 9999)
+);
